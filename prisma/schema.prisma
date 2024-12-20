@@ -21,4 +21,125 @@ model organization {
   phone     String?  @db.VarChar(15)
   createdAt DateTime @default(now()) //Timestamp for creation
   updatedAt DateTime @updatedAt
+
+  //Relation
+  schools school[]
+}
+
+model user {
+  id                String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  firstName         String    @db.VarChar(255) //user first name
+  lastName          String    @db.VarChar(255) //user last name
+  middleName        String    @db.VarChar(255) //user middle name
+  email             String?   @unique // user email (optional, default to null)
+  phone             String?   @db.VarChar(15) //user phone (optinal)
+  gender            String?   @db.VarChar(15) //user gender (optinal)
+  username          String    @db.VarChar(15) //username  (required)
+  passwordHash      String    @db.VarChar(255) //user password (required)
+  profileImageUrl   String?   @db.VarChar(255) //user profile image (optinal)
+  status            String?   @db.VarChar(15) //user status - Active/Inactive (optinal)
+  socialProviderId  String?   @db.VarChar(255) //user social provider id facebook,twitter, insta etc (optinal)
+  lastLogin         DateTime? //user lastlogin date and time (optinal)
+  isNewUser         Boolean   @default(true) //user is he new user/not 
+  isPasswordChanged Boolean   @default(false) //user changed password /not 
+  dob               DateTime? //user date of birth (optinal)
+  createdAt         DateTime  @default(now()) //Timestamp for creation
+  updatedAt         DateTime  @updatedAt // Automatically updates on changes
+  isActive          Int       @default(1) //status of user default to Active
+
+  schools              school[]
+  userAddress          userAddress[]
+  accessToken          accessToken[]
+  userSession          userSession[]
+  userAddressId        String?                @db.Uuid
+  userSchoolMembership userSchoolMembership[]
+  // Add the opposite relation fields
+}
+
+model school {
+  id                   Int                    @id @default(autoincrement()) // Primary key
+  name                 String                 @db.VarChar(255) // School name
+  address              String?                @db.VarChar(255) // School address (optional)
+  email                String?                @unique // School email (optional)
+  phone                String?                @db.VarChar(15) // School phone (optional)
+  latitude             Decimal?               @db.Decimal(11, 8) // Latitude (optional)
+  longitude            Decimal?               @db.Decimal(11, 8) // Longitude (optional)
+  organizationId       Int
+  websiteUrl           String?                @db.VarChar(255) // School website (optional)
+  createdAt            DateTime               @default(now()) // Timestamp for creation
+  updatedAt            DateTime               @updatedAt // Automatically updates on changes
+  isActive             Int                    @default(1) // Status of school (default: active)
+  createdBy            String?                @db.Uuid // Change this to `Uuid`
+  updatedBy            String?                @db.Uuid // Change this to `Uuid`
+  // Relationships
+  organization         organization           @relation(fields: [organizationId], references: [id])
+  user                 user?                  @relation(fields: [userId], references: [id])
+  userId               String?                @db.Uuid
+  userSchoolMembership userSchoolMembership[]
+}
+
+model userAddress {
+  id        String   @id @default(uuid()) @db.Uuid // Primary key with UUID
+  street    String   @db.VarChar(255) // Address name
+  city      String   @db.VarChar(255) // City
+  state     String   @db.VarChar(255) // State
+  locality  String   @db.VarChar(255) // Locality (e.g., area or neighborhood)
+  lat       Decimal? @db.Decimal(11, 8) // Latitude (optional)
+  lng       Decimal? @db.Decimal(11, 8) // Longitude (optional)
+  country   String   @db.VarChar(255) // Country
+  isActive  Int      @default(1) // Status of the address (default is active)
+  userId    String   @db.Uuid // Foreign key to User (UUID type)
+  createdBy String?  @db.Uuid // Change this to `Uuid`
+  updatedBy String?  @db.Uuid // Change this to `Uuid`
+  // Relationship with User model
+  user      user     @relation(fields: [userId], references: [id])
+
+  // Automatically track timestamps
+  createdAt DateTime @default(now()) // Timestamp for address creation
+  updatedAt DateTime @updatedAt // Automatically updates on changes
+}
+
+model accessToken {
+  id          String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId      String    @db.Uuid // User ID (foreign key)
+  accessToken String    @db.VarChar(255) // Access token
+  deviceType  String    @db.VarChar(50) // Device type (e.g., mobile, web)
+  ipAddress   String    @db.VarChar(45) // IP address
+  isValid     Int       @default(1) // 1 = valid, 0 = invalid
+  createdAt   DateTime  @default(now()) // Timestamp for token creation
+  updatedAt   DateTime  @updatedAt // Automatically updated on changes
+  expiredAt   DateTime? // Optional expiration time for the access token
+
+  // Relationship with User model
+  user user @relation(fields: [userId], references: [id])
+}
+
+model userSession {
+  id           String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId       String    @db.Uuid // User ID (foreign key)
+  sessionToken String    @db.VarChar(255) // Session token
+  idToken      String    @db.VarChar(255) // ID token
+  deviceType   String    @db.VarChar(50) // Device type (e.g., mobile, web)
+  ipAddress    String    @db.VarChar(45) // IP address
+  isValid      Int       @default(1) // 1 = valid, 0 = invalid
+  createdAt    DateTime  @default(now()) // Timestamp for session creation
+  updatedAt    DateTime  @updatedAt // Automatically updated on changes
+  expiredAt    DateTime? // Optional expiration time for the session token
+
+  // Relationship with User model
+  user user @relation(fields: [userId], references: [id])
+}
+
+model userSchoolMembership {
+  id        String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId    String    @db.Uuid // User ID (foreign key)
+  schoolId  Int // School ID (foreign key)
+  isActive  Int       @default(1) // Status of membership (default is active)
+  joinedAt  DateTime? // Timestamp when user joined
+  leftAt    DateTime? // Timestamp when user left (optional)
+  createdBy String?   @db.Uuid // Change this to `Uuid`
+  updatedBy String?   @db.Uuid // Change this to `Uuid`
+  // Relationships
+  user      user      @relation(fields: [userId], references: [id]) // Relationship with User model
+  school    school    @relation(fields: [schoolId], references: [id]) // Relationship with School model
 }
