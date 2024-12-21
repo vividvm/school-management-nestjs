@@ -51,31 +51,59 @@ model user {
   userAddress          userAddress[]
   accessToken          accessToken[]
   userSession          userSession[]
-  userAddressId        String?                @db.Uuid
   userSchoolMembership userSchoolMembership[]
   // Add the opposite relation fields
+  roleMaster           roleMaster[]
+  designationMaster    designationMaster[]
+
+  createdModules                                 schoolAppModule[]                       @relation("CreatedByUser")
+  updatedModules                                 schoolAppModule[]                       @relation("UpdatedByUser")
+  createdByUserRoleAppModuleP                    userRoleAppModulePermission[]           @relation("CreatedByUser")
+  updatedByUserRoleAppModuleP                    userRoleAppModulePermission[]           @relation("UpdatedByUser")
+  createdByUserAdditionalRoleAppModulePermission userAdditionalRoleAppModulePermission[] @relation("CreatedByUser")
+  updatedByUserAdditionalRoleAppModulePermission userAdditionalRoleAppModulePermission[] @relation("UpdatedByUser")
+  userIdUserAdditionalRoleAppModulePermission    userAdditionalRoleAppModulePermission[] @relation("UserId")
+  createdBySubjectMaster                         subjectMaster[]                         @relation("CreatedByUser")
+  updatedBySubjectMaster                         subjectMaster[]                         @relation("UpdatedByUser")
+  createdByClassMaster                           classMaster[]                           @relation("CreatedByUser")
+  updatedByClasstMaster                          classMaster[]                           @relation("UpdatedByUser")
+  createdByClassSectionMaster                    classSectionMaster[]                    @relation("CreatedByUser")
+  updatedByClasstSectionMaster                   classSectionMaster[]                    @relation("UpdatedByUser")
+  createdByClassSubjectMaster                    classSubjectMaster[]                    @relation("CreatedByUser")
+  updatedByClasstSubjectMaster                   classSubjectMaster[]                    @relation("UpdatedByUser")
+  createdByClassEducationMaster                  classEducationGroupMaster[]             @relation("CreatedByUser")
+  updatedByClassEducationMaster                  classEducationGroupMaster[]             @relation("UpdatedByUser")
 }
 
 model school {
-  id                   Int                    @id @default(autoincrement()) // Primary key
-  name                 String                 @db.VarChar(255) // School name
-  address              String?                @db.VarChar(255) // School address (optional)
-  email                String?                @unique // School email (optional)
-  phone                String?                @db.VarChar(15) // School phone (optional)
-  latitude             Decimal?               @db.Decimal(11, 8) // Latitude (optional)
-  longitude            Decimal?               @db.Decimal(11, 8) // Longitude (optional)
-  organizationId       Int
-  websiteUrl           String?                @db.VarChar(255) // School website (optional)
-  createdAt            DateTime               @default(now()) // Timestamp for creation
-  updatedAt            DateTime               @updatedAt // Automatically updates on changes
-  isActive             Int                    @default(1) // Status of school (default: active)
-  createdBy            String?                @db.Uuid // Change this to `Uuid`
-  updatedBy            String?                @db.Uuid // Change this to `Uuid`
+  id                                    Int                                     @id @default(autoincrement()) // Primary key
+  name                                  String                                  @db.VarChar(255) // School name
+  address                               String?                                 @db.VarChar(255) // School address (optional)
+  email                                 String?                                 @unique // School email (optional)
+  phone                                 String?                                 @db.VarChar(15) // School phone (optional)
+  latitude                              Decimal?                                @db.Decimal(11, 8) // Latitude (optional)
+  longitude                             Decimal?                                @db.Decimal(11, 8) // Longitude (optional)
+  organizationId                        Int
+  websiteUrl                            String?                                 @db.VarChar(255) // School website (optional)
+  createdAt                             DateTime                                @default(now()) // Timestamp for creation
+  updatedAt                             DateTime                                @updatedAt // Automatically updates on changes
+  isActive                              Int                                     @default(1) // Status of school (default: active)
+  createdBy                             String?                                 @db.Uuid // Change this to `Uuid`
+  updatedBy                             String?                                 @db.Uuid // Change this to `Uuid`
   // Relationships
-  organization         organization           @relation(fields: [organizationId], references: [id])
-  user                 user?                  @relation(fields: [userId], references: [id])
-  userId               String?                @db.Uuid
-  userSchoolMembership userSchoolMembership[]
+  organization                          organization                            @relation(fields: [organizationId], references: [id])
+  user                                  user?                                   @relation(fields: [userId], references: [id])
+  userId                                String?                                 @db.Uuid
+  userSchoolMembership                  userSchoolMembership[]
+  roleMaster                            roleMaster[]
+  designationMaster                     designationMaster[]
+  schoolAppModule                       schoolAppModule[]
+  userRoleAppModulePermission           userRoleAppModulePermission[]
+  userAdditionalRoleAppModulePermission userAdditionalRoleAppModulePermission[]
+  classMaster                           classMaster[]
+  classSectionMaster                    classSectionMaster[]
+  classSubjectMaster                    classSubjectMaster[]
+  classEducationGroupMaster             classEducationGroupMaster[]
 }
 
 model userAddress {
@@ -142,4 +170,203 @@ model userSchoolMembership {
   // Relationships
   user      user      @relation(fields: [userId], references: [id]) // Relationship with User model
   school    school    @relation(fields: [schoolId], references: [id]) // Relationship with School model
+}
+
+model roleMaster {
+  id        String  @id @default(uuid()) @db.Uuid
+  name      String  @db.VarChar(255)
+  isActive  Int     @default(1)
+  schoolId  Int
+  createdBy String? @db.Uuid // Change this to `Uuid`
+  updatedBy String? @db.Uuid // Change this to `Uuid`
+
+  userRoleAppModulePermission           userRoleAppModulePermission[]
+  // Relationships
+  school                                school                                  @relation(fields: [schoolId], references: [id]) // Relationship with School model
+  user                                  user?                                   @relation(fields: [userId], references: [id])
+  userId                                String?                                 @db.Uuid
+  userAdditionalRoleAppModulePermission userAdditionalRoleAppModulePermission[]
+}
+
+model designationMaster {
+  id        String  @id @default(uuid()) @db.Uuid
+  name      String  @db.VarChar(255)
+  isActive  Int     @default(1)
+  schoolId  Int
+  createdBy String? @db.Uuid // Change this to `Uuid`
+  updatedBy String? @db.Uuid // Change this to `Uuid`
+  // Relationships
+
+  school school  @relation(fields: [schoolId], references: [id]) // Relationship with School model
+  user   user?   @relation(fields: [userId], references: [id])
+  userId String? @db.Uuid
+}
+
+model appModule {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(255)
+  isActive Int    @default(1)
+
+  appModulePermission appModulePermission[]
+  schoolAppModule     schoolAppModule[]
+}
+
+model appModulePermission {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  appModuleId Int
+  isActive    Int       @default(1)
+  appModule   appModule @relation(fields: [appModuleId], references: [id])
+
+  userRoleAppModulePermission           userRoleAppModulePermission[]
+  userAdditionalRoleAppModulePermission userAdditionalRoleAppModulePermission[]
+}
+
+model schoolAppModule {
+  id          Int      @id @default(autoincrement())
+  schoolId    Int
+  appModuleId Int
+  isActive    Int      @default(1)
+  createdBy   String?  @db.Uuid
+  updatedBy   String?  @db.Uuid
+  createdAt   DateTime @default(now()) // Timestamp for session creation
+  updatedAt   DateTime @updatedAt // Automatically updated on changes
+
+  appModule     appModule @relation(fields: [appModuleId], references: [id])
+  school        school    @relation(fields: [schoolId], references: [id])
+  // Relations to the `user` table
+  createdByUser user?     @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser user?     @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+}
+
+model userRoleAppModulePermission {
+  id                    Int      @id @default(autoincrement())
+  schoolId              Int
+  appModulePermissionId Int
+  roleId                String   @db.Uuid
+  isActive              Int      @default(1)
+  createdBy             String?  @db.Uuid
+  updatedBy             String?  @db.Uuid
+  createdAt             DateTime @default(now()) // Timestamp for session creation
+  updatedAt             DateTime @updatedAt // Automatically updated on changes
+
+  appModulePermission appModulePermission @relation(fields: [appModulePermissionId], references: [id])
+  school              school              @relation(fields: [schoolId], references: [id])
+  // Relations to the `user` table
+  createdByUser       user?               @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser       user?               @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  roleMaster          roleMaster?         @relation(fields: [roleId], references: [id])
+}
+
+model userAdditionalRoleAppModulePermission {
+  id                    Int      @id @default(autoincrement())
+  schoolId              Int
+  appModulePermissionId Int
+  userId                String   @db.Uuid
+  roleId                String   @db.Uuid
+  isActive              Int      @default(1)
+  createdBy             String?  @db.Uuid
+  updatedBy             String?  @db.Uuid
+  createdAt             DateTime @default(now()) // Timestamp for session creation
+  updatedAt             DateTime @updatedAt // Automatically updated on changes
+
+  appModulePermission appModulePermission @relation(fields: [appModulePermissionId], references: [id])
+  school              school              @relation(fields: [schoolId], references: [id])
+  // Relations to the `user` table
+  createdByUser       user?               @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser       user?               @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  userIdUser          user?               @relation("UserId", fields: [userId], references: [id])
+  roleMaster          roleMaster?         @relation(fields: [roleId], references: [id])
+  roleMasterId        String?             @db.Uuid
+}
+
+model subjectMaster {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  schoolId  Int
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  createdAt DateTime @default(now()) // Timestamp for session creation
+  updatedAt DateTime @updatedAt // Automatically updated on changes
+  isActive  Int      @default(1)
+
+  classSubjectMaster classSubjectMaster[]
+  //relation
+  createdByUser      user?                @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser      user?                @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+}
+
+model classMaster {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(255)
+  schoolId  Int
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  createdAt DateTime @default(now()) // Timestamp for session creation
+  updatedAt DateTime @updatedAt // Automatically updated on changes
+  isActive  Int      @default(1)
+
+  classSectionMaster classSectionMaster[]
+
+  //relation
+  createdByUser user?  @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser user?  @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  school        school @relation(fields: [schoolId], references: [id])
+}
+
+model classSectionMaster {
+  id        String   @id @default(uuid()) @db.Uuid
+  section   String   @db.VarChar(255)
+  schoolId  Int
+  classId   String   @db.Uuid
+  createdBy String?  @db.Uuid
+  updatedBy String?  @db.Uuid
+  createdAt DateTime @default(now()) // Timestamp for session creation
+  updatedAt DateTime @updatedAt // Automatically updated on changes
+  isActive  Int      @default(1)
+
+  //relation
+  createdByUser             user?                       @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser             user?                       @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  school                    school                      @relation(fields: [schoolId], references: [id])
+  classMaster               classMaster?                @relation(fields: [classId], references: [id])
+  classSubjectMaster        classSubjectMaster[]
+  classEducationGroupMaster classEducationGroupMaster[]
+}
+
+model classSubjectMaster {
+  id             String   @id @default(uuid()) @db.Uuid
+  subjectId      String   @db.Uuid
+  schoolId       Int
+  classSectionId String   @db.Uuid
+  createdBy      String?  @db.Uuid
+  updatedBy      String?  @db.Uuid
+  createdAt      DateTime @default(now()) // Timestamp for session creation
+  updatedAt      DateTime @updatedAt // Automatically updated on changes
+  isActive       Int      @default(1)
+
+  //relation
+  createdByUser user?               @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser user?               @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  school        school              @relation(fields: [schoolId], references: [id])
+  classMaster   classSectionMaster? @relation(fields: [classSectionId], references: [id])
+  subjectMaster subjectMaster?      @relation(fields: [subjectId], references: [id])
+}
+
+model classEducationGroupMaster {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  schoolId       Int
+  classSectionId String   @db.Uuid
+  createdBy      String?  @db.Uuid
+  updatedBy      String?  @db.Uuid
+  createdAt      DateTime @default(now()) // Timestamp for session creation
+  updatedAt      DateTime @updatedAt // Automatically updated on changes
+  isActive       Int      @default(1)
+
+  //relation
+  createdByUser user?               @relation("CreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser user?               @relation("UpdatedByUser", fields: [updatedBy], references: [id])
+  school        school              @relation(fields: [schoolId], references: [id])
+  classMaster   classSectionMaster? @relation(fields: [classSectionId], references: [id])
 }

@@ -1,0 +1,3 @@
+
+GET http://localhost:3000/users/7b577a24-bb0c-4a1d-a659-02a264912cec
+Content-Type: application/json

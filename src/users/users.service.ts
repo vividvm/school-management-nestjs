@@ -1,70 +1,44 @@
 import { PrismaClient, user } from '@prisma/client';
 
+import { ApiResponse } from 'src/common/utils/api-reponse';
+import { CreateUserDto } from './dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   private prisma = new PrismaClient();
 
-  // Create a new user
-  async createUser(data: {
-    firstName: string;
-    lastName: string;
-    middleName: string;
-    username: string;
-    passwordHash: string;
-    email?: string;
-    phone?: string;
-    gender?: string;
-  }): Promise<user> {
+  async createUser(createUserDto: CreateUserDto) {
     try {
-      return await this.prisma.user.create({
-        data,
-      });
+      const user = await this.prisma.user.create({ data: createUserDto });
+      return ApiResponse.success(user, 'User created successfully');
     } catch (error) {
-      throw new Error('Error creating user: ' + error.message);
+      const errorMessage = error.message || 'Failed to create user';
+      throw ApiResponse.failure(errorMessage, 400);
     }
   }
 
-  // Get a user by ID
-  async getUserById(id: string): Promise<user | null> {
+  async getAllUser() {
+    try {
+      return await this.prisma.user.findMany({
+        where: {
+          isActive: 1,
+        },
+      });
+    } catch (error) {
+      throw new Error('Error getting users:' + error.message);
+    }
+  }
+  async getAllUserById(id: string): Promise<user | null> {
     try {
       return await this.prisma.user.findUnique({
-        where: { id },
+        where: {
+          isActive: 1,
+          id,
+        },
       });
     } catch (error) {
-      throw new Error('Error fetching user: ' + error.message);
-    }
-  }
-
-  // Update a user
-  async updateUser(
-    id: string,
-    data: {
-      firstName?: string;
-      lastName?: string;
-      email?: string;
-      phone?: string;
-    },
-  ): Promise<user> {
-    try {
-      return await this.prisma.user.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      throw new Error('Error updating user: ' + error.message);
-    }
-  }
-
-  // Delete a user
-  async deleteUser(id: string): Promise<void> {
-    try {
-      await this.prisma.user.delete({
-        where: { id },
-      });
-    } catch (error) {
-      throw new Error('Error deleting user: ' + error.message);
+      throw new Error('Error getting users:' + error.message);
     }
   }
 }
